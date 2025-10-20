@@ -1,0 +1,69 @@
+{
+  "modules-left": [
+    "custom/power",
+    "hyprland/workspaces"
+  ],
+  "modules-right": [
+    "tray",
+    "network",
+    "pulseaudio"
+  ],
+  "modules-center": [
+    "clock"
+  ],
+  "custom/power": {
+    "format": "⭘ ",
+    "tooltip": false,
+    "on-click": "wlogout -b 5"
+  },
+  "hyprland/workspaces": {
+    "disable-scroll": true,
+    "warp-on-scroll": false,
+    "format": "{icon}",
+    "show-special": false,
+    "format-icons": {
+        "1": "󰨞",
+        "2": "󰈹",
+        "3": "󰙯",
+        "default": ""
+    },
+     "persistent-workspaces": {
+        "HDMI-A-1": [2],
+        "HDMI-A-2": [1,3]
+    }
+},
+  "network": {
+    "format-wifi": "  {essid}",
+    "format-ethernet": " Ethernet",
+    "format-linked": " Linked (No IP)",
+    "format-disconnected": " Disconnected",
+    "tooltip": false
+  },
+  "pulseaudio": {
+    "format": "{icon} {volume}%",
+    "format-muted": " {volume}%",
+    "format-bluetooth": " {volume}%",
+    "format-bluetooth-muted": " {volume}%",
+    "format-icons": {
+      "headphone": " ",
+      "headset": " ",
+      "default": [
+        " "
+      ]
+    },
+    "on-click": "pavucontrol"
+  },
+  "clock": {
+    "format": "{:%a %d/%m/%Y ~ %H:%M}",
+    "tooltip-format": "<span size='15000'><tt>{calendar}</tt></span>",
+    "calendar": {
+      "mode": "month",
+      "format": {
+        "months": "<span color='#F5C2E7'><b>{}</b></span>",
+        "weekdays": "<span color='#89B4FA'><b>{}</b></span>",
+        "days": "<span color='#CDD6F4'><b>{}</b></span>",
+        "today": "<span color='#F9E2AF'><b>{}</b></span>"
+      }
+    }
+  }
+}

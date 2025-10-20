@@ -1,0 +1,72 @@
+/* Base font and element defaults */
+* {
+    font-family: "JetBrains Mono Nerd Font", monospace;
+    font-size: 16px;
+    font-weight: bold;
+    background-color: transparent;
+    border-radius: 5px;
+    min-height: 0;
+}
+
+/* Window and tooltip backgrounds */
+window,
+tooltip {
+    background-color: #1e1e2e;
+}
+
+/* Waybar main bar */
+#waybar {
+    background-color: rgba(30, 30, 46, 0.7);
+    border-radius: 0;
+}
+
+/* Workspaces */
+#workspaces {
+margin: 1px 0;
+}
+
+#workspaces button {
+color: #cdd6f4;
+border: 2px solid transparent;
+padding: 0 8px;
+margin: 0 2px;
+}
+
+#workspaces button:hover {
+color: #f5c2e7;
+border-bottom: 2px solid #f5c2e7;
+background-color: rgba(88, 91, 112, 0.6);
+}
+#workspaces button.active {
+color: #f5c2e7;
+border: 2px solid #f5c2e7;
+}
+#workspaces button.urgent {
+background-color: #f38ba8;
+}
+
+/* Tray modules */
+#custom-power,
+#tray,
+#network,
+#pulseaudio,
+#clock {
+    color: #cdd6f4;
+    margin: 1px 0;
+    padding: 0px 10px;
+    border-radius: 3px;
+    transition: background-color 0.2s ease;
+}
+
+#custom-power:hover,
+#network:hover,
+#pulseaudio:hover,
+#clock:hover {
+    background-color: rgba(88, 91, 112, 0.6);
+}
+
+/* Individual colors for icons */
+#network   { color: #a6e3a1; }
+#pulseaudio{ color: #cba6f7; padding-right: 20px;}
+#clock     { color: #89b4fa; margin-right: 10px; }
+#custom-power { margin-left: 10px; padding-left: 15px; }
