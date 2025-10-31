@@ -15,8 +15,9 @@ run_rofi() {
     local placeholder="$1"
     shift
 
-    rofi -dmenu \
-        -theme-str "entry { placeholder: \"${placeholder}\";}" \
+   rofi -dmenu \
+        -theme-str 'window { width: 600px; } listview { lines: 8; }' \
+        -theme-str "entry { placeholder: \"${placeholder}\"; }" \
         -i \
         "$@"
 }
