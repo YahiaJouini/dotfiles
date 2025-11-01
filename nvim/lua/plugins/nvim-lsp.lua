@@ -38,7 +38,6 @@ return {
          })
       end,
    },
-
    -- nvim-cmp for autocompletion
    {
       "hrsh7th/nvim-cmp",
@@ -63,6 +62,8 @@ return {
             mapping = {
                ["<C-Space>"] = cmp.mapping.complete(),       -- trigger completion
                ["<CR>"] = cmp.mapping.confirm({ select = true }), -- confirm selection
+               ["<Down>"] = cmp.mapping.select_next_item(),
+               ["<Up>"] = cmp.mapping.select_prev_item(),
                ["<Tab>"] = cmp.mapping(function(fallback)
                   if cmp.visible() then
                      cmp.select_next_item()
