@@ -17,9 +17,3 @@ vim.keymap.set({'n','v','o'}, '<C-f>', '10j', { noremap = true, silent = true, d
 vim.keymap.set({'n','v','o'}, '<C-b>', '10k', { noremap = true, silent = true, desc = 'Move up 10 lines' })
 -- stop ctrl+z from quitting nvim
 vim.keymap.set({'n','v','o'}, '<C-z>', '<nop>')
-
-local builtin = require('telescope.builtin')
-vim.keymap.set('n', '<C-p>', builtin.find_files, { desc = 'Telescope find files' })
-vim.keymap.set('n', '<leader>fg', builtin.live_grep, { desc = 'Telescope live grep' })
-vim.keymap.set('n', '<leader>fb', builtin.buffers, { desc = 'Telescope buffers' })
-vim.keymap.set('n', '<leader>bd', ':bdelete<CR>', { silent = true }) --delete current buffer
