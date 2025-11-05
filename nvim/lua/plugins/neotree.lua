@@ -9,7 +9,7 @@ return {
 	lazy = false,
 	keys = {
 		{
-			"<C-e>",
+			"<C-z>",
 			function()
 				-- Toggle / focus logic
 				local buf_ft = vim.bo.filetype
@@ -51,6 +51,11 @@ return {
 		filesystem = {
 			follow_current_file = { enabled = true },
 			use_libuv_file_watcher = true,
+			filtered_items = {
+				hide_dotfiles = false, -- show dotfiles like .clang-format
+				hide_gitignored = false, -- optional: show files ignored by git
+				hide_by_name = {}, -- list specific filenames to hide
+			},
 		},
 		window = {
 			mappings = {
