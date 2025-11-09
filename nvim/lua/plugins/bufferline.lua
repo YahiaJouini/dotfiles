@@ -1,7 +1,7 @@
 return {
 	"akinsho/bufferline.nvim",
 	version = "*",
-	dependencies = { "nvim-tree/nvim-web-devicons" },
+	dependencies = { "nvim-tree/nvim-web-devicons", "echasnovski/mini.bufremove" },
 	config = function()
 		require("bufferline").setup({
 			options = {
@@ -22,10 +22,16 @@ return {
 				show_close_icon = false,
 			},
 		})
+		-- safer delete current buffer
+		vim.keymap.set("n", "<leader>bd", function()
+			bufremove.delete(0, false)
+		end, { silent = true, desc = "Delete current buffer" })
 
-		vim.keymap.set("n", "<S-l>", ":BufferLineCycleNext<CR>", { silent = true })
-		vim.keymap.set("n", "<S-h>", ":BufferLineCyclePrev<CR>", { silent = true })
-		-- azer keyboard mappings
+		-- buffer navigation
+		vim.keymap.set("n", "<S-m>", ":BufferLineCycleNext<CR>", { silent = true })
+		vim.keymap.set("n", "<S-l>", ":BufferLineCyclePrev<CR>", { silent = true })
+
+		-- azerty keyboard mappings
 		for i, key in ipairs({ "&", "é", '"', "'", "(", "-", "è", "_", "ç" }) do
 			vim.keymap.set("n", key, string.format(":BufferLineGoToBuffer %d<CR>", i), { silent = true })
 		end

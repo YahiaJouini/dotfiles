@@ -61,17 +61,35 @@ return {
 			local cmp = require("cmp")
 			local luasnip = require("luasnip")
 
+			-- Load friendly snippets
+			require("luasnip.loaders.from_vscode").lazy_load()
+
 			cmp.setup({
 				snippet = {
 					expand = function(args)
 						luasnip.lsp_expand(args.body)
 					end,
 				},
-				mapping = {
-					["<C-Space>"] = cmp.mapping.complete(), -- trigger completion
-					["<CR>"] = cmp.mapping.confirm({ select = true }), -- confirm selection
-					["<Down>"] = cmp.mapping.select_next_item(),
-					["<Up>"] = cmp.mapping.select_prev_item(),
+
+				-- Performance optimization
+				performance = {
+					debounce = 60,
+					throttle = 30,
+					fetching_timeout = 500,
+					max_view_entries = 30,
+				},
+
+				-- Mapping configuration
+				mapping = cmp.mapping.preset.insert({
+					["<C-Space>"] = cmp.mapping.complete(),
+					["<CR>"] = cmp.mapping.confirm({
+						behavior = cmp.ConfirmBehavior.Replace,
+						select = true,
+					}),
+					["<C-b>"] = cmp.mapping.scroll_docs(-4),
+					["<C-f>"] = cmp.mapping.scroll_docs(4),
+					["<C-e>"] = cmp.mapping.abort(),
+
 					["<Tab>"] = cmp.mapping(function(fallback)
 						if cmp.visible() then
 							cmp.select_next_item()
@@ -81,6 +99,7 @@ return {
 							fallback()
 						end
 					end, { "i", "s" }),
+
 					["<S-Tab>"] = cmp.mapping(function(fallback)
 						if cmp.visible() then
 							cmp.select_prev_item()
@@ -90,19 +109,125 @@ return {
 							fallback()
 						end
 					end, { "i", "s" }),
-				},
-				sources = cmp.config.sources({
-					{ name = "nvim_lsp" },
-					{ name = "luasnip" },
-					{ name = "buffer" },
-					{ name = "path" },
 				}),
-				experimental = { ghost_text = true }, -- VSCode-style inline preview
+
+				-- Source priority configuration
+				sources = cmp.config.sources({
+					{
+						name = "nvim_lsp",
+						priority = 1000,
+						-- Filter out Text kind from LSP (usually noise)
+						entry_filter = function(entry)
+							return require("cmp.types").lsp.CompletionItemKind[entry:get_kind()] ~= "Text"
+						end,
+					},
+					{
+						name = "luasnip",
+						priority = 750,
+						max_item_count = 5,
+					},
+					{
+						name = "path",
+						priority = 500,
+						option = {
+							trailing_slash = true,
+						},
+					},
+					{
+						name = "buffer",
+						priority = 250,
+						keyword_length = 3, -- Only trigger after 3 chars
+						max_item_count = 5,
+					},
+				}),
+
+				sorting = {
+					priority_weight = 2,
+					comparators = {
+						cmp.config.compare.locality, -- LOCAL VARIABLES FIRST!
+						cmp.config.compare.recently_used, -- Recently used items
+						cmp.config.compare.score, -- LSP relevance score
+						cmp.config.compare.offset, -- Position in line
+						cmp.config.compare.exact, -- Exact matches
+						cmp.config.compare.kind, -- CompletionItemKind
+						cmp.config.compare.sort_text, -- LSP sortText
+						cmp.config.compare.length, -- Shorter items first
+						cmp.config.compare.order, -- Original order
+					},
+				},
+
+				-- Better visual formatting
+				formatting = {
+					fields = { "kind", "abbr", "menu" },
+					format = function(entry, vim_item)
+						local kind_icons = {
+							Text = "󰉿",
+							Method = "󰆧",
+							Function = "󰊕",
+							Constructor = "",
+							Field = "󰜢",
+							Variable = "󰀫",
+							Class = "󰠱",
+							Interface = "",
+							Module = "",
+							Property = "󰜢",
+							Unit = "󰑭",
+							Value = "󰎠",
+							Enum = "",
+							Keyword = "󰌋",
+							Snippet = "",
+							Color = "󰏘",
+							File = "󰈙",
+							Reference = "󰈇",
+							Folder = "󰉋",
+							EnumMember = "",
+							Constant = "󰏿",
+							Struct = "󰙅",
+							Event = "",
+							Operator = "󰆕",
+							TypeParameter = "",
+						}
+
+						vim_item.kind = string.format("%s %s", kind_icons[vim_item.kind], vim_item.kind)
+						vim_item.menu = ({
+							nvim_lsp = "[LSP]",
+							luasnip = "[Snip]",
+							buffer = "[Buf]",
+							path = "[Path]",
+						})[entry.source.name]
+
+						return vim_item
+					end,
+				},
+
+				-- Better window styling
+				window = {
+					completion = cmp.config.window.bordered(),
+					documentation = cmp.config.window.bordered(),
+				},
+
+				-- Experimental features
+				experimental = {
+					ghost_text = false, -- Disable ghost text (can be distracting)
+				},
 			})
 
-			-- use cmp for cmdline completion
-			cmp.setup.cmdline("/", { sources = { { name = "buffer" } } })
-			cmp.setup.cmdline(":", { sources = { { name = "path" }, { name = "cmdline" } } })
+			-- Cmdline completions
+			cmp.setup.cmdline("/", {
+				mapping = cmp.mapping.preset.cmdline(),
+				sources = {
+					{ name = "buffer" },
+				},
+			})
+
+			cmp.setup.cmdline(":", {
+				mapping = cmp.mapping.preset.cmdline(),
+				sources = cmp.config.sources({
+					{ name = "path" },
+				}, {
+					{ name = "cmdline" },
+				}),
+			})
 		end,
 	},
 }
