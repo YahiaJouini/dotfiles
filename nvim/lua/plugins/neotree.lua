@@ -7,66 +7,171 @@ return {
 		"nvim-tree/nvim-web-devicons",
 	},
 	lazy = false,
-	keys = {
-		{
-			"<C-z>",
-			function()
-				-- Toggle / focus logic
-				local buf_ft = vim.bo.filetype
-				if buf_ft == "neo-tree" then
-					-- If currently in the Neo-tree buffer, switch back
-					vim.cmd("wincmd p")
-					return
-				end
-				-- Otherwise, try to find an existing Neo-tree window
-				for _, win in ipairs(vim.api.nvim_list_wins()) do
-					local b = vim.api.nvim_win_get_buf(win)
-					if vim.api.nvim_buf_get_option(b, "filetype") == "neo-tree" then
-						-- Focus that window
-						vim.api.nvim_set_current_win(win)
-						return
-					end
-				end
-				-- If no Neo-tree window is open, open (with reveal)
-				require("neo-tree.command").execute({
-					toggle = true,
-					reveal = true,
-					position = "left",
-					source = "filesystem",
-				})
-			end,
-			desc = "Toggle/focus Neo-tree",
-		},
-		{
-			"<C-c>",
-			function()
-				-- always close Neo-tree
-				require("neo-tree.command").execute({ action = "close" })
-			end,
-			desc = "Close Neo-tree",
-		},
-	},
-	opts = {
-		close_if_last_window = false,
-		filesystem = {
-			follow_current_file = { enabled = true },
-			use_libuv_file_watcher = true,
-			filtered_items = {
-				hide_dotfiles = false, -- show dotfiles like .clang-format
-				hide_gitignored = false, -- optional: show files ignored by git
-				hide_by_name = {}, -- list specific filenames to hide
-			},
-		},
-		window = {
-			mappings = {
-				-- you can add or override mappings inside Neo-tree buffer
-				["<cr>"] = "open",
-				["o"] = "open",
-				["S"] = "open_split",
-			},
-		},
-	},
 	config = function(_, opts)
-		require("neo-tree").setup(opts)
+		require("neo-tree").setup({
+			close_if_last_window = false,
+			popup_border_style = "rounded",
+			enable_git_status = true,
+			enable_diagnostics = true,
+			-- Important: Set default position
+			default_component_configs = {
+				indent = {
+					indent_size = 2,
+					padding = 1,
+					with_markers = true,
+					indent_marker = "│",
+					last_indent_marker = "└",
+					highlight = "NeoTreeIndentMarker",
+				},
+				icon = {
+					folder_closed = "",
+					folder_open = "",
+					folder_empty = "󰜌",
+					default = "*",
+					highlight = "NeoTreeFileIcon",
+				},
+				git_status = {
+					symbols = {
+						added = "",
+						modified = "",
+						deleted = "✖",
+						renamed = "󰁕",
+						untracked = "",
+						ignored = "",
+						unstaged = "󰄱",
+						staged = "",
+						conflict = "",
+					},
+				},
+			},
+			window = {
+				position = "left",
+				width = 35,
+				mapping_options = {
+					noremap = true,
+					nowait = true,
+				},
+				mappings = {
+					["<space>"] = {
+						"toggle_node",
+						nowait = false,
+					},
+					["<2-LeftMouse>"] = "open",
+					["<cr>"] = "open",
+					["<esc>"] = "cancel",
+					["P"] = { "toggle_preview", config = { use_float = true, use_image_nvim = true } },
+					["l"] = "focus_preview",
+					["S"] = "open_split",
+					["s"] = "open_vsplit",
+					["t"] = "open_tabnew",
+					["w"] = "open_with_window_picker",
+					["C"] = "close_node",
+					["z"] = "close_all_nodes",
+					["a"] = {
+						"add",
+						config = {
+							show_path = "none",
+						},
+					},
+					["A"] = "add_directory",
+					["d"] = "delete",
+					["r"] = "rename",
+					["y"] = "copy_to_clipboard",
+					["x"] = "cut_to_clipboard",
+					["p"] = "paste_from_clipboard",
+					["c"] = "copy",
+					["m"] = "move",
+					["q"] = "close_window",
+					["R"] = "refresh",
+					["?"] = "show_help",
+					["<"] = "prev_source",
+					[">"] = "next_source",
+					["i"] = "show_file_details",
+				},
+			},
+			filesystem = {
+				filtered_items = {
+					visible = false,
+					hide_dotfiles = false,
+					hide_gitignored = false,
+					hide_hidden = true,
+					hide_by_name = {
+						".DS_Store",
+						"thumbs.db",
+						"node_modules",
+					},
+					never_show = {},
+				},
+				follow_current_file = {
+					enabled = true,
+					leave_dirs_open = false,
+				},
+				group_empty_dirs = false,
+				hijack_netrw_behavior = "open_default",
+				use_libuv_file_watcher = false,
+				window = {
+					mappings = {
+						["<bs>"] = "navigate_up",
+						["."] = "set_root",
+						["H"] = "toggle_hidden",
+						["/"] = "fuzzy_finder",
+						["D"] = "fuzzy_finder_directory",
+						["#"] = "fuzzy_sorter",
+						["f"] = "filter_on_submit",
+						["<c-x>"] = "clear_filter",
+						["[g"] = "prev_git_modified",
+						["]g"] = "next_git_modified",
+						["o"] = { "show_help", nowait = false, config = { title = "Order by", prefix_key = "o" } },
+						["oc"] = { "order_by_created", nowait = false },
+						["od"] = { "order_by_diagnostics", nowait = false },
+						["og"] = { "order_by_git_status", nowait = false },
+						["om"] = { "order_by_modified", nowait = false },
+						["on"] = { "order_by_name", nowait = false },
+						["os"] = { "order_by_size", nowait = false },
+						["ot"] = { "order_by_type", nowait = false },
+					},
+				},
+			},
+			buffers = {
+				follow_current_file = {
+					enabled = true,
+					leave_dirs_open = false,
+				},
+				group_empty_dirs = true,
+				show_unloaded = true,
+			},
+			git_status = {
+				window = {
+					position = "float",
+					mappings = {
+						["A"] = "git_add_all",
+						["gu"] = "git_unstage_file",
+						["ga"] = "git_add_file",
+						["gr"] = "git_revert_file",
+						["gc"] = "git_commit",
+						["gp"] = "git_push",
+						["gg"] = "git_commit_and_push",
+					},
+				},
+			},
+		})
+
+		vim.keymap.set("n", "<leader>e", ":Neotree toggle<CR>", {
+			noremap = true,
+			silent = true,
+			desc = "Toggle Neo-tree",
+		})
+
+		vim.keymap.set("n", "<leader>fe", ":Neotree reveal<CR>", {
+			noremap = true,
+			silent = true,
+			desc = "Reveal file in Neo-tree",
+		})
+
+		vim.keymap.set("n", "<leader>o", ":Neotree focus<CR>", {
+			noremap = true,
+			silent = true,
+			desc = "Focus Neo-tree",
+		})
 	end,
 }
