@@ -21,3 +21,12 @@ vim.cmd([[
   hi! NormalFloat guibg=NONE
   hi! FloatBorder guifg=#5c6370 guibg=NONE
 ]])
+
+-- Suppress lspconfig deprecation warnings
+local notify = vim.notify
+vim.notify = function(msg, ...)
+	if msg:match("lspconfig") then
+		return
+	end
+	notify(msg, ...)
+end

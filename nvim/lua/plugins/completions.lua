@@ -27,7 +27,7 @@ return {
 	-- Signature hints
 	{
 		"ray-x/lsp_signature.nvim",
-		event = "LspAttach", -- Better event trigger
+		event = "LspAttach",
 		config = function()
 			require("lsp_signature").setup({
 				bind = true,
@@ -46,6 +46,22 @@ return {
 			})
 		end,
 	},
+	-- Tailwind CSS tools
+	{
+		"luckasRanarison/tailwind-tools.nvim",
+		dependencies = { "nvim-treesitter/nvim-treesitter" },
+		opts = {
+			document_color = {
+				enabled = true,
+				kind = "inline",
+				inline_symbol = "󰝤 ",
+				debounce = 200,
+			},
+			conceal = {
+				enabled = false,
+			},
+		},
+	},
 	-- nvim-cmp for autocompletion
 	{
 		"hrsh7th/nvim-cmp",
@@ -53,13 +69,16 @@ return {
 			"hrsh7th/cmp-nvim-lsp",
 			"hrsh7th/cmp-buffer",
 			"hrsh7th/cmp-path",
+			"hrsh7th/cmp-cmdline",
 			"saadparwaiz1/cmp_luasnip",
 			"L3MON4D3/LuaSnip",
 			"rafamadriz/friendly-snippets",
+			"onsails/lspkind.nvim",
 		},
 		config = function()
 			local cmp = require("cmp")
 			local luasnip = require("luasnip")
+			local lspkind = require("lspkind")
 
 			-- Load friendly snippets
 			require("luasnip.loaders.from_vscode").lazy_load()
@@ -136,7 +155,7 @@ return {
 					{
 						name = "buffer",
 						priority = 250,
-						keyword_length = 3, -- Only trigger after 3 chars
+						keyword_length = 3,
 						max_item_count = 5,
 					},
 				}),
@@ -144,60 +163,40 @@ return {
 				sorting = {
 					priority_weight = 2,
 					comparators = {
-						cmp.config.compare.locality, -- LOCAL VARIABLES FIRST!
-						cmp.config.compare.recently_used, -- Recently used items
-						cmp.config.compare.score, -- LSP relevance score
-						cmp.config.compare.offset, -- Position in line
-						cmp.config.compare.exact, -- Exact matches
-						cmp.config.compare.kind, -- CompletionItemKind
-						cmp.config.compare.sort_text, -- LSP sortText
-						cmp.config.compare.length, -- Shorter items first
-						cmp.config.compare.order, -- Original order
+						cmp.config.compare.locality,
+						cmp.config.compare.recently_used,
+						cmp.config.compare.score,
+						cmp.config.compare.offset,
+						cmp.config.compare.exact,
+						cmp.config.compare.kind,
+						cmp.config.compare.sort_text,
+						cmp.config.compare.length,
+						cmp.config.compare.order,
 					},
 				},
 
-				-- Better visual formatting
+				-- Better visual formatting with Tailwind color support
 				formatting = {
 					fields = { "kind", "abbr", "menu" },
-					format = function(entry, vim_item)
-						local kind_icons = {
-							Text = "󰉿",
-							Method = "󰆧",
-							Function = "󰊕",
-							Constructor = "",
-							Field = "󰜢",
-							Variable = "󰀫",
-							Class = "󰠱",
-							Interface = "",
-							Module = "",
-							Property = "󰜢",
-							Unit = "󰑭",
-							Value = "󰎠",
-							Enum = "",
-							Keyword = "󰌋",
-							Snippet = "",
-							Color = "󰏘",
-							File = "󰈙",
-							Reference = "󰈇",
-							Folder = "󰉋",
-							EnumMember = "",
-							Constant = "󰏿",
-							Struct = "󰙅",
-							Event = "",
-							Operator = "󰆕",
-							TypeParameter = "",
-						}
+					format = lspkind.cmp_format({
+						mode = "symbol_text",
+						maxwidth = 50,
+						ellipsis_char = "...",
+						before = function(entry, vim_item)
+							-- Tailwind CSS color hints
+							vim_item = require("tailwind-tools.cmp").lspkind_format(entry, vim_item)
 
-						vim_item.kind = string.format("%s %s", kind_icons[vim_item.kind], vim_item.kind)
-						vim_item.menu = ({
-							nvim_lsp = "[LSP]",
-							luasnip = "[Snip]",
-							buffer = "[Buf]",
-							path = "[Path]",
-						})[entry.source.name]
+							-- Add source labels
+							vim_item.menu = ({
+								nvim_lsp = "[LSP]",
+								luasnip = "[Snip]",
+								buffer = "[Buf]",
+								path = "[Path]",
+							})[entry.source.name]
 
-						return vim_item
-					end,
+							return vim_item
+						end,
+					}),
 				},
 
 				-- Better window styling
@@ -208,7 +207,7 @@ return {
 
 				-- Experimental features
 				experimental = {
-					ghost_text = false, -- Disable ghost text (can be distracting)
+					ghost_text = false,
 				},
 			})
 

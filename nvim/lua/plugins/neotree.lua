@@ -90,6 +90,7 @@ return {
 				},
 			},
 			filesystem = {
+				open_on_setup = false,
 				filtered_items = {
 					visible = false,
 					hide_dotfiles = false,
