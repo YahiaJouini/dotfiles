@@ -7,6 +7,7 @@ return {
 			"ts_ls",
 			"tailwindcss",
 			"eslint",
+			"gopls",
 		},
 		automatic_installation = true,
 	},

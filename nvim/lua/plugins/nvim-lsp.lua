@@ -29,6 +29,36 @@ return {
 			filetypes = { "c", "cpp", "objc", "objcpp", "cuda" },
 		}
 
+		-- Configure gopls (Go)
+		vim.lsp.config.gopls = {
+			capabilities = capabilities,
+			settings = {
+				gopls = {
+					analyses = {
+						unusedparams = true,
+						nilness = true,
+						shadow = true,
+					},
+					staticcheck = true,
+					codelenses = {
+						gc_details = true,
+						test = true,
+						tidy = true,
+					},
+					hints = {
+						assignVariableTypes = true,
+						compositeLiteralFields = true,
+						compositeLiteralTypes = true,
+						constantValues = true,
+						functionTypeParameters = true,
+						rangeVariableTypes = true,
+					},
+					gofumpt = true,
+				},
+			},
+			filetypes = { "go", "gomod" },
+		}
+
 		-- Configure lua_ls
 		vim.lsp.config.lua_ls = {
 			capabilities = capabilities,
@@ -92,6 +122,7 @@ return {
 			"lua_ls",
 			"clangd",
 			"ts_ls",
+			"gopls",
 		})
 
 		-- Diagnostic configuration
