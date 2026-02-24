@@ -6,18 +6,51 @@ return {
 		-- Get completion capabilities from nvim-cmp
 		local capabilities = require("cmp_nvim_lsp").default_capabilities()
 
+		-- Helper: smarter formatting client selection
+		local function format_buffer(bufnr)
+			local ft = vim.bo[bufnr].filetype
+
+			vim.lsp.buf.format({
+				async = true,
+				bufnr = bufnr,
+				filter = function(client)
+					-- Python: prefer ruff for formatting
+					if ft == "python" then
+						return client.name == "ruff"
+					end
+
+					-- JS/TS: prefer eslint if attached
+					if
+						ft == "javascript"
+						or ft == "javascriptreact"
+						or ft == "typescript"
+						or ft == "typescriptreact"
+					then
+						if client.name == "eslint" then
+							return true
+						end
+						-- fallback if eslint not attached
+						return client.name == "ts_ls"
+					end
+
+					-- Default: allow any formatter-capable client
+					return client:supports_method("textDocument/formatting")
+				end,
+			})
+		end
+
 		-- Configure clangd with optimal settings
 		vim.lsp.config.clangd = {
 			cmd = {
 				"clangd",
-				"--background-index", -- Index project in background
-				"--clang-tidy", -- Enable clang-tidy checks
-				"--header-insertion=iwyu", -- Smart include insertion
-				"--completion-style=detailed", -- Detailed completions
-				"--function-arg-placeholders", -- Show parameter placeholders
-				"--fallback-style=llvm", -- Default style
-				"--all-scopes-completion", -- Complete from all scopes
-				"--log=error", -- Less verbose logging
+				"--background-index",
+				"--clang-tidy",
+				"--header-insertion=iwyu",
+				"--completion-style=detailed",
+				"--function-arg-placeholders",
+				"--fallback-style=llvm",
+				"--all-scopes-completion",
+				"--log=error",
 			},
 			capabilities = capabilities,
 			root_markers = {
@@ -77,11 +110,6 @@ return {
 			},
 		}
 
-		-- Configure ts_ls
-		vim.lsp.config.ts_ls = {
-			capabilities = capabilities,
-		}
-
 		-- Configure ts_ls with inlay hints
 		vim.lsp.config.ts_ls = {
 			capabilities = capabilities,
@@ -117,12 +145,58 @@ return {
 			},
 		}
 
+		-- Configure tailwindcss
+		vim.lsp.config.tailwindcss = {
+			capabilities = capabilities,
+		}
+
+		-- Configure eslint
+		vim.lsp.config.eslint = {
+			capabilities = capabilities,
+		}
+
+		-- Configure pyright (Python completion/type checking)
+		vim.lsp.config.pyright = {
+			capabilities = capabilities,
+			settings = {
+				python = {
+					analysis = {
+						autoSearchPaths = true,
+						useLibraryCodeForTypes = true,
+						diagnosticMode = "workspace",
+						typeCheckingMode = "basic", -- "off" | "basic" | "strict"
+					},
+				},
+			},
+			filetypes = { "python" },
+		}
+
+		-- Configure ruff (Python linting + formatting + import organization)
+		vim.lsp.config.ruff = {
+			capabilities = capabilities,
+			init_options = {
+				settings = {
+					-- If your installed ruff supports these, they'll be used.
+					-- Safe to keep here for modern setups.
+					format = {
+						enabled = true,
+					},
+					organizeImports = true,
+				},
+			},
+			filetypes = { "python" },
+		}
+
 		-- Enable the LSPs
 		vim.lsp.enable({
 			"lua_ls",
 			"clangd",
 			"ts_ls",
 			"gopls",
+			"tailwindcss",
+			"eslint",
+			"pyright",
+			"ruff",
 		})
 
 		-- Diagnostic configuration
@@ -144,7 +218,7 @@ return {
 			severity_sort = true,
 			float = {
 				border = "rounded",
-				source = "always",
+				source = true,
 				header = "",
 				prefix = "",
 			},
@@ -157,7 +231,9 @@ return {
 			vim.fn.sign_define(hl, { text = icon, texthl = hl, numhl = hl })
 		end
 
-		vim.lsp.inlay_hint.enable(false)
+		if vim.lsp.inlay_hint then
+			vim.lsp.inlay_hint.enable(false)
+		end
 
 		-- LSP attach autocmd for keybindings
 		vim.api.nvim_create_autocmd("LspAttach", {
@@ -217,7 +293,7 @@ return {
 					vim.tbl_extend("force", opts, { desc = "Code Action" })
 				)
 				vim.keymap.set("n", "<leader>f", function()
-					vim.lsp.buf.format({ async = true })
+					format_buffer(bufnr)
 				end, vim.tbl_extend("force", opts, { desc = "Format" }))
 
 				-- Clangd-specific: switch between header/source
@@ -232,10 +308,15 @@ return {
 			end,
 		})
 
-		-- Auto-show diagnostics on cursor hold
+		-- Auto-show diagnostics on cursor hold (only if there is something on cursor line)
 		vim.o.updatetime = 500
 		vim.api.nvim_create_autocmd("CursorHold", {
 			callback = function()
+				local diags = vim.diagnostic.get(0, { lnum = vim.api.nvim_win_get_cursor(0)[1] - 1 })
+				if not diags or vim.tbl_isempty(diags) then
+					return
+				end
+
 				vim.diagnostic.open_float(nil, {
 					focusable = false,
 					border = "rounded",

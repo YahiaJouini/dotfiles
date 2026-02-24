@@ -87,6 +87,28 @@ return {
 			require("luasnip.loaders.from_vscode").lazy_load()
 
 			cmp.setup({
+				enabled = function()
+					-- Disable cmp in prompt buffers (Telescope, etc.)
+					if vim.api.nvim_get_option_value("buftype", { buf = 0 }) == "prompt" then
+						return false
+					end
+
+					-- Only allow completion when cursor is at end of current word
+					local line = vim.api.nvim_get_current_line()
+					local _, col0 = unpack(vim.api.nvim_win_get_cursor(0))
+					local col = col0 + 1 -- Lua string index (1-based)
+
+					-- char to the right of cursor
+					local next_char = line:sub(col, col)
+
+					-- If next char is word-ish, cursor is in middle of word -> disable popup
+					if next_char ~= "" and next_char:match("[%w_]") then
+						return false
+					end
+
+					return true
+				end,
+
 				snippet = {
 					expand = function(args)
 						luasnip.lsp_expand(args.body)

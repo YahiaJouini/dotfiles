@@ -8,6 +8,8 @@ return {
 			"tailwindcss",
 			"eslint",
 			"gopls",
+			"pyright",
+			"ruff",
 		},
 		automatic_installation = true,
 	},
