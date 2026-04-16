@@ -1,0 +1,20 @@
+name: sofclimb
+root: ~/projects/sofclimb
+
+tmux_options: -f ~/.config/tmux/tmux.conf
+
+windows:
+  - web-editor:
+      layout: main-vertical
+      panes:
+        - cd web && nvim .
+  - back-editor:
+      layout: main-vertical
+      panes:
+        - cd backend && nvim .
+  - web-dev:
+      panes:
+        - cd web && bun run dev
+  - back-dev:
+      panes:
+        - cd backend && docker compose up --build -d && docker compose logs -f
