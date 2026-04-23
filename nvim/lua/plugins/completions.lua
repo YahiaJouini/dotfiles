@@ -1,257 +1,105 @@
+-- this file only works for nvim 0.12+, check git history for older versions of nvim
 return {
-	--github copilot
-	{
-		"github/copilot.vim",
-		config = function()
-			-- disable Copilot by default
-			vim.g.copilot_enabled = false
+  { "github/copilot.vim" },
+  { "ray-x/lsp_signature.nvim", event = "LspAttach" },
+  { "luckasRanarison/tailwind-tools.nvim" },
 
-			-- disable default tab mapping
-			vim.g.copilot_no_tab_map = true
-			vim.g.copilot_assume_mapped = true
+  {
+    "hrsh7th/nvim-cmp",
+    dependencies = {
+      "hrsh7th/cmp-nvim-lsp",
+      "hrsh7th/cmp-buffer",
+      "hrsh7th/cmp-path",
+      "onsails/lspkind.nvim",
+    },
+    config = function()
+      local cmp = require("cmp")
+      local lspkind = require("lspkind")
+      local types = require("cmp.types")
 
-			-- accept the whole suggestion
-			vim.api.nvim_set_keymap(
-				"i",
-				"<S-Right>",
-				'copilot#Accept("")',
-				{ silent = true, expr = true, replace_keycodes = false }
-			)
+      local kind_priority = {
+        [types.lsp.CompletionItemKind.Variable]  = 1,
+        [types.lsp.CompletionItemKind.Constant]  = 1,
+        [types.lsp.CompletionItemKind.EnumMember]= 1,
+        [types.lsp.CompletionItemKind.Field]     = 2,
+        [types.lsp.CompletionItemKind.Property]  = 2,
+        [types.lsp.CompletionItemKind.Function]  = 3,
+        [types.lsp.CompletionItemKind.Method]    = 3,
+        [types.lsp.CompletionItemKind.Keyword]   = 100, 
+      }
 
-			-- accept one word at a time
-			vim.api.nvim_set_keymap(
-				"i",
-				"<C-Right>",
-				'copilot#AcceptWord("")',
-				{ silent = true, expr = true, replace_keycodes = false }
-			)
-		end,
-	},
-	-- Signature hints
-	{
-		"ray-x/lsp_signature.nvim",
-		event = "LspAttach",
-		config = function()
-			require("lsp_signature").setup({
-				bind = true,
-				floating_window = true,
-				floating_window_above_cur_line = true,
-				hint_enable = false,
-				always_trigger = true,
-				auto_close_after = 3,
-				max_height = 10,
-				max_width = 80,
-				timer_interval = 200,
-				handler_opts = {
-					border = "rounded",
-				},
-				padding = " ",
-			})
-		end,
-	},
-	-- Tailwind CSS tools
-	{
-		"luckasRanarison/tailwind-tools.nvim",
-		dependencies = { "nvim-treesitter/nvim-treesitter" },
-		opts = {
-			document_color = {
-				enabled = true,
-				kind = "inline",
-				inline_symbol = "󰝤 ",
-				debounce = 200,
-			},
-			conceal = {
-				enabled = false,
-			},
-		},
-	},
-	-- nvim-cmp for autocompletion
-	{
-		"hrsh7th/nvim-cmp",
-		dependencies = {
-			"hrsh7th/cmp-nvim-lsp",
-			"hrsh7th/cmp-buffer",
-			"hrsh7th/cmp-path",
-			"hrsh7th/cmp-cmdline",
-			"saadparwaiz1/cmp_luasnip",
-			"L3MON4D3/LuaSnip",
-			"rafamadriz/friendly-snippets",
-			"onsails/lspkind.nvim",
-		},
-		config = function()
-			local cmp = require("cmp")
-			local luasnip = require("luasnip")
-			local lspkind = require("lspkind")
+      cmp.setup({
+        performance = {
+          debounce = 20,
+          throttle = 10,
+          fetching_timeout = 200,
+        },
 
-			-- Load friendly snippets
-			require("luasnip.loaders.from_vscode").lazy_load()
+        -- 3. Custom Sorting Engine
+        sorting = {
+          comparators = {
+            cmp.config.compare.exact,
+            cmp.config.compare.locality,
+            cmp.config.compare.recently_used,
+            cmp.config.compare.score,
+            -- Custom strict hierarchy enforcement
+            function(entry1, entry2)
+              local kind1 = entry1:get_kind()
+              local kind2 = entry2:get_kind()
+              local priority1 = kind_priority[kind1] or 10
+              local priority2 = kind_priority[kind2] or 10
+              if priority1 ~= priority2 then
+                return priority1 < priority2
+              end
+              return nil
+            end,
+            cmp.config.compare.offset,
+            cmp.config.compare.sort_text,
+            cmp.config.compare.length,
+            cmp.config.compare.order,
+          },
+        },
 
-			cmp.setup({
-				enabled = function()
-					-- Disable cmp in prompt buffers (Telescope, etc.)
-					if vim.api.nvim_get_option_value("buftype", { buf = 0 }) == "prompt" then
-						return false
-					end
+        -- Removed snippet jump logic from <Tab>
+        mapping = cmp.mapping.preset.insert({
+          ["<C-Space>"] = cmp.mapping.complete(),
+          ["<CR>"] = cmp.mapping.confirm({ select = true }),
+          ["<Tab>"] = cmp.mapping(function(fallback)
+            if cmp.visible() then
+              cmp.select_next_item()
+            else
+              fallback()
+            end
+          end, { "i", "s" }),
+        }),
 
-					-- Only allow completion when cursor is at end of current word
-					local line = vim.api.nvim_get_current_line()
-					local _, col0 = unpack(vim.api.nvim_win_get_cursor(0))
-					local col = col0 + 1 -- Lua string index (1-based)
+        sources = cmp.config.sources({
+          { 
+            name = "nvim_lsp", 
+            priority = 1000,
+            -- Hard Filter: Annihilate snippets at the source level
+            entry_filter = function(entry)
+              return entry:get_kind() ~= types.lsp.CompletionItemKind.Snippet
+            end
+          },
+          { name = "path", priority = 500 },
+          { name = "buffer", priority = 250, keyword_length = 3 },
+        }),
 
-					-- char to the right of cursor
-					local next_char = line:sub(col, col)
-
-					-- If next char is word-ish, cursor is in middle of word -> disable popup
-					if next_char ~= "" and next_char:match("[%w_]") then
-						return false
-					end
-
-					return true
-				end,
-
-				snippet = {
-					expand = function(args)
-						luasnip.lsp_expand(args.body)
-					end,
-				},
-
-				-- Performance optimization
-				performance = {
-					debounce = 60,
-					throttle = 30,
-					fetching_timeout = 500,
-					max_view_entries = 30,
-				},
-
-				-- Mapping configuration
-				mapping = cmp.mapping.preset.insert({
-					["<C-Space>"] = cmp.mapping.complete(),
-					["<CR>"] = cmp.mapping.confirm({
-						behavior = cmp.ConfirmBehavior.Replace,
-						select = true,
-					}),
-					["<C-b>"] = cmp.mapping.scroll_docs(-4),
-					["<C-f>"] = cmp.mapping.scroll_docs(4),
-					["<C-e>"] = cmp.mapping.abort(),
-
-					["<Tab>"] = cmp.mapping(function(fallback)
-						if cmp.visible() then
-							cmp.select_next_item()
-						elseif luasnip.expand_or_jumpable() then
-							luasnip.expand_or_jump()
-						else
-							fallback()
-						end
-					end, { "i", "s" }),
-
-					["<S-Tab>"] = cmp.mapping(function(fallback)
-						if cmp.visible() then
-							cmp.select_prev_item()
-						elseif luasnip.jumpable(-1) then
-							luasnip.jump(-1)
-						else
-							fallback()
-						end
-					end, { "i", "s" }),
-				}),
-
-				-- Source priority configuration
-				sources = cmp.config.sources({
-					{
-						name = "nvim_lsp",
-						priority = 1000,
-						-- Filter out Text kind from LSP (usually noise)
-						entry_filter = function(entry)
-							return require("cmp.types").lsp.CompletionItemKind[entry:get_kind()] ~= "Text"
-						end,
-					},
-					{
-						name = "luasnip",
-						priority = 750,
-						max_item_count = 5,
-					},
-					{
-						name = "path",
-						priority = 500,
-						option = {
-							trailing_slash = true,
-						},
-					},
-					{
-						name = "buffer",
-						priority = 250,
-						keyword_length = 3,
-						max_item_count = 5,
-					},
-				}),
-
-				sorting = {
-					priority_weight = 2,
-					comparators = {
-						cmp.config.compare.locality,
-						cmp.config.compare.recently_used,
-						cmp.config.compare.score,
-						cmp.config.compare.offset,
-						cmp.config.compare.exact,
-						cmp.config.compare.kind,
-						cmp.config.compare.sort_text,
-						cmp.config.compare.length,
-						cmp.config.compare.order,
-					},
-				},
-
-				-- Better visual formatting with Tailwind color support
-				formatting = {
-					fields = { "kind", "abbr", "menu" },
-					format = lspkind.cmp_format({
-						mode = "symbol_text",
-						maxwidth = 50,
-						ellipsis_char = "...",
-						before = function(entry, vim_item)
-							-- Tailwind CSS color hints
-							vim_item = require("tailwind-tools.cmp").lspkind_format(entry, vim_item)
-
-							-- Add source labels
-							vim_item.menu = ({
-								nvim_lsp = "[LSP]",
-								luasnip = "[Snip]",
-								buffer = "[Buf]",
-								path = "[Path]",
-							})[entry.source.name]
-
-							return vim_item
-						end,
-					}),
-				},
-
-				-- Better window styling
-				window = {
-					completion = cmp.config.window.bordered(),
-					documentation = cmp.config.window.bordered(),
-				},
-
-				-- Experimental features
-				experimental = {
-					ghost_text = false,
-				},
-			})
-
-			-- Cmdline completions
-			cmp.setup.cmdline("/", {
-				mapping = cmp.mapping.preset.cmdline(),
-				sources = {
-					{ name = "buffer" },
-				},
-			})
-
-			cmp.setup.cmdline(":", {
-				mapping = cmp.mapping.preset.cmdline(),
-				sources = cmp.config.sources({
-					{ name = "path" },
-				}, {
-					{ name = "cmdline" },
-				}),
-			})
-		end,
-	},
+        formatting = {
+          format = lspkind.cmp_format({
+            mode = "symbol_text",
+            maxwidth = 50,
+            before = function(entry, vim_item)
+              return require("tailwind-tools.cmp").lspkind_format(entry, vim_item)
+            end,
+          }),
+        },
+        window = {
+          completion = cmp.config.window.bordered(),
+          documentation = cmp.config.window.bordered(),
+        },
+      })
+    end,
+  },
 }
