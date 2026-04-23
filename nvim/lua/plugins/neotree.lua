@@ -10,7 +10,7 @@ return {
     require("neo-tree").setup({
       close_if_last_window = true,
       popup_border_style = "rounded",
-      
+
       enable_git_status = true,
       enable_diagnostics = false,
 
@@ -27,11 +27,11 @@ return {
           default = "*",
         },
       },
-      
+
       filesystem = {
         open_on_setup = false,
         use_libuv_file_watcher = true,
-        
+
         filtered_items = {
           visible = false,
           hide_dotfiles = false,
@@ -43,13 +43,13 @@ return {
             "__pycache__",
           },
         },
-        
+
         follow_current_file = {
-          enabled = false,
+          enabled = true,
         },
         group_empty_dirs = false,
         hijack_netrw_behavior = "open_default",
-        
+
         window = {
           mappings = {
             ["<bs>"] = "navigate_up",
@@ -61,17 +61,17 @@ return {
           },
         },
       },
-      
-    window = {
+
+      window = {
         position = "left",
         width = 35,
         mapping_options = { noremap = true, nowait = true },
         mappings = {
-          ["<space>"] = "none", 
-          
-          ["<tab>"] = "toggle_node", 
-          ["l"] = "focus_preview", 
-          
+          ["<space>"] = "none",
+
+          ["<tab>"] = "toggle_node",
+          ["l"] = "focus_preview",
+
           ["<cr>"] = "open",
           ["<esc>"] = "cancel",
           ["P"] = { "toggle_preview", config = { use_float = true } },
@@ -92,8 +92,10 @@ return {
       },
     })
 
-    vim.keymap.set("n", "<leader>e", "<cmd>Neotree toggle<cr>", { noremap = true, silent = true, desc = "Toggle Neo-tree" })
-    vim.keymap.set("n", "<leader>fe", "<cmd>Neotree reveal<cr>", { noremap = true, silent = true, desc = "Reveal file in Neo-tree" })
+    vim.keymap.set("n", "<leader>e", "<cmd>Neotree toggle<cr>",
+      { noremap = true, silent = true, desc = "Toggle Neo-tree" })
+    vim.keymap.set("n", "<leader>fe", "<cmd>Neotree reveal<cr>",
+      { noremap = true, silent = true, desc = "Reveal file in Neo-tree" })
     vim.keymap.set("n", "<leader>o", "<cmd>Neotree focus<cr>", { noremap = true, silent = true, desc = "Focus Neo-tree" })
   end,
 }

@@ -1,6 +1,28 @@
 -- this file only works for nvim 0.12+, check git history for older versions of nvim
 return {
-  { "github/copilot.vim" },
+{
+    "github/copilot.vim",
+    config = function()
+      -- Disable automatic trigger by default (trigger manually or keep disabled until needed)
+      vim.g.copilot_enabled = false
+      vim.g.copilot_no_tab_map = true
+      vim.g.copilot_assume_mapped = true
+
+      -- Accept the whole suggestion
+      vim.keymap.set("i", "<S-Right>", 'copilot#Accept("")', { 
+        expr = true, 
+        replace_keycodes = false, 
+        desc = "Copilot Accept Full" 
+      })
+
+      -- Accept one word at a time
+      vim.keymap.set("i", "<C-Right>", 'copilot#AcceptWord("")', { 
+        expr = true, 
+        replace_keycodes = false, 
+        desc = "Copilot Accept Word" 
+      })
+    end,
+  },
   { "ray-x/lsp_signature.nvim", event = "LspAttach" },
   { "luckasRanarison/tailwind-tools.nvim" },
 

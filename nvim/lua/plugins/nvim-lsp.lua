@@ -3,7 +3,7 @@
 local function patch_inlay_hints_api()
   local orig_set_extmark = vim.api.nvim_buf_set_extmark
   local inlay_ns = vim.api.nvim_create_namespace("nvim.lsp.inlayhint")
-  
+
   vim.api.nvim_buf_set_extmark = function(buffer, ns_id, line, col, opts)
     if ns_id == inlay_ns then
       local ok, id = pcall(orig_set_extmark, buffer, ns_id, line, col, opts)
@@ -89,7 +89,7 @@ return {
     config = function()
       patch_inlay_hints_api()
       setup_diagnostics()
-      
+
       -- THIS is the corrected function call
       setup_inlay_hints()
 
@@ -111,11 +111,17 @@ return {
           root_dir = function(fname)
             local util = require("lspconfig.util")
             return util.root_pattern(".git", "pyproject.toml", "package.json", "go.mod")(fname)
-              or vim.fn.getcwd()
+                or vim.fn.getcwd()
           end,
         }
 
         if server == "basedpyright" then
+          server_opts.root_dir = function(fname)
+            local util = require("lspconfig.util")
+            return util.root_pattern("pyrightconfig.json")(fname)
+                or util.root_pattern("pyproject.toml", ".git")(fname)
+                or vim.fn.getcwd()
+          end
           server_opts.settings = {
             basedpyright = {
               analysis = {

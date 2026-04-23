@@ -47,15 +47,19 @@ vim.api.nvim_create_autocmd("LspAttach", {
 
     vim.keymap.set("n", "K", vim.lsp.buf.hover, vim.tbl_extend("force", opts, { desc = "Hover Documentation" }))
     vim.keymap.set("n", "<leader>rn", vim.lsp.buf.rename, vim.tbl_extend("force", opts, { desc = "Rename Symbol" }))
-    vim.keymap.set("n", "<leader>f", function() vim.lsp.buf.format({ async = true }) end, vim.tbl_extend("force", opts, { desc = "Format Buffer" }))
+
+    vim.keymap.set({ "n", "v" }, "<leader>f", function()
+      require("conform").format({ async = true, lsp_format = "fallback" })
+    end, vim.tbl_extend("force", opts, { desc = "Format Buffer (Conform)" }))
+
     vim.keymap.set("n", "gl", vim.diagnostic.open_float, vim.tbl_extend("force", opts, { desc = "Line Diagnostics" }))
     vim.keymap.set({ "n", "v" }, "<leader>ca", vim.lsp.buf.code_action, vim.tbl_extend("force", opts, { desc = "Code Actions" }))
     vim.keymap.set("n", "<leader>ce", function()
       local line = vim.api.nvim_win_get_cursor(0)[1] - 1
       local diags = vim.diagnostic.get(0, { lnum = line })
-      if #diags == 0 then 
+      if #diags == 0 then
         vim.notify("No diagnostic", vim.log.levels.WARN) 
-        return 
+        return
       end
       
       local msg = diags[1].message
