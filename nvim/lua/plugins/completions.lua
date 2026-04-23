@@ -17,15 +17,17 @@ return {
       local lspkind = require("lspkind")
       local types = require("cmp.types")
 
-      local kind_priority = {
-        [types.lsp.CompletionItemKind.Variable]  = 1,
-        [types.lsp.CompletionItemKind.Constant]  = 1,
-        [types.lsp.CompletionItemKind.EnumMember]= 1,
-        [types.lsp.CompletionItemKind.Field]     = 2,
-        [types.lsp.CompletionItemKind.Property]  = 2,
-        [types.lsp.CompletionItemKind.Function]  = 3,
-        [types.lsp.CompletionItemKind.Method]    = 3,
-        [types.lsp.CompletionItemKind.Keyword]   = 100, 
+local kind_priority = {
+        [types.lsp.CompletionItemKind.Variable]   = 1,
+        [types.lsp.CompletionItemKind.Constant]   = 1,
+        [types.lsp.CompletionItemKind.EnumMember] = 1,
+        [types.lsp.CompletionItemKind.Enum]       = 1,
+        [types.lsp.CompletionItemKind.Field]      = 2,
+        [types.lsp.CompletionItemKind.Property]   = 2,
+        [types.lsp.CompletionItemKind.Function]   = 3,
+        [types.lsp.CompletionItemKind.Method]     = 3,
+        [types.lsp.CompletionItemKind.Keyword]    = 100,
+        [types.lsp.CompletionItemKind.Text]       = 100,
       }
 
       cmp.setup({
@@ -36,13 +38,19 @@ return {
         },
 
         -- 3. Custom Sorting Engine
-        sorting = {
+      sorting = {
+          priority_weight = 2,
           comparators = {
             cmp.config.compare.exact,
-            cmp.config.compare.locality,
-            cmp.config.compare.recently_used,
-            cmp.config.compare.score,
-            -- Custom strict hierarchy enforcement
+            -- 1. Hard Source Priority: LSP always beats Buffer/Path
+            function(entry1, entry2)
+              local src1 = entry1.source.name
+              local src2 = entry2.source.name
+              if src1 == "nvim_lsp" and src2 ~= "nvim_lsp" then return true end
+              if src2 == "nvim_lsp" and src1 ~= "nvim_lsp" then return false end
+              return nil
+            end,
+
             function(entry1, entry2)
               local kind1 = entry1:get_kind()
               local kind2 = entry2:get_kind()
@@ -53,9 +61,11 @@ return {
               end
               return nil
             end,
+
+            cmp.config.compare.locality,
+            cmp.config.compare.recently_used,
+            cmp.config.compare.score,
             cmp.config.compare.offset,
-            cmp.config.compare.sort_text,
-            cmp.config.compare.length,
             cmp.config.compare.order,
           },
         },

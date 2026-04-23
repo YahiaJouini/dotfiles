@@ -85,7 +85,22 @@ return {
         callback = function(ev)
           local opts = { buffer = ev.buf, silent = true }
           
-          vim.keymap.set("n", "gd", vim.lsp.buf.definition, opts)
+          vim.keymap.set("n", "gd", function()
+            vim.lsp.buf.definition({
+              on_list = function(options)
+                if not options.items or #options.items == 0 then
+                  vim.notify("No definition found", vim.log.levels.WARN)
+                  return
+                end
+                -- Completely bypasses the persistent Quickfix list.
+                local first_def = options.items[1]
+                vim.cmd("edit " .. vim.fn.fnameescape(first_def.filename))
+                vim.api.nvim_win_set_cursor(0, { first_def.lnum, first_def.col - 1 })
+                -- Center the screen after jumping
+                vim.cmd("normal! zz") 
+              end
+            })
+          end, vim.tbl_extend("force", opts, { desc = "Go to Definition (Bypass QF)" }))
           vim.keymap.set("n", "K", vim.lsp.buf.hover, opts)
           vim.keymap.set("n", "<leader>rn", vim.lsp.buf.rename, opts)
           vim.keymap.set("n", "<leader>f", function() vim.lsp.buf.format({ async = true }) end, opts)
