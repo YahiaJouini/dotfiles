@@ -1,4 +1,81 @@
 -- this file only works for nvim 0.12+, check git history for older versions of nvim
+
+local function patch_inlay_hints_api()
+  local orig_set_extmark = vim.api.nvim_buf_set_extmark
+  local inlay_ns = vim.api.nvim_create_namespace("nvim.lsp.inlayhint")
+  
+  vim.api.nvim_buf_set_extmark = function(buffer, ns_id, line, col, opts)
+    if ns_id == inlay_ns then
+      local ok, id = pcall(orig_set_extmark, buffer, ns_id, line, col, opts)
+      return ok and id or nil
+    end
+    return orig_set_extmark(buffer, ns_id, line, col, opts)
+  end
+end
+
+-- Diagnostic UI Setup
+local function setup_diagnostics()
+  vim.diagnostic.config({
+    virtual_text = { spacing = 4, prefix = "●" },
+    signs = true,
+    underline = true,
+    update_in_insert = false,
+    severity_sort = true,
+    float = { border = "rounded", source = "always", header = "", prefix = "" },
+  })
+
+  vim.api.nvim_create_autocmd("CursorHold", {
+    desc = "Show diagnostic on hover",
+    callback = function()
+      vim.diagnostic.open_float(nil, {
+        focusable = false,
+        close_events = { "BufLeave", "CursorMoved", "InsertEnter", "FocusLost" },
+        border = "rounded",
+        source = "always",
+        prefix = " ",
+        scope = "cursor",
+      })
+    end,
+  })
+end
+
+-- Inlay Hint State Management
+local function setup_inlay_hints()
+  local lsp_group = vim.api.nvim_create_augroup("UserLspConfig", { clear = true })
+  local inlay_hint_grp = vim.api.nvim_create_augroup("LspInlayHints", { clear = true })
+
+  vim.api.nvim_create_autocmd("LspAttach", {
+    group = lsp_group,
+    callback = function(ev)
+      local client = vim.lsp.get_client_by_id(ev.data.client_id)
+      if client and client.server_capabilities.inlayHintProvider then
+        vim.lsp.inlay_hint.enable(true, { bufnr = ev.buf })
+      end
+    end,
+  })
+
+  vim.api.nvim_create_autocmd("InsertEnter", {
+    group = inlay_hint_grp,
+    callback = function(args)
+      if vim.lsp.inlay_hint.is_enabled({ bufnr = args.buf }) then
+        vim.lsp.inlay_hint.enable(false, { bufnr = args.buf })
+        vim.b[args.buf].inlay_hints_restored = true
+      end
+    end,
+  })
+
+  vim.api.nvim_create_autocmd("InsertLeave", {
+    group = inlay_hint_grp,
+    callback = function(args)
+      if vim.b[args.buf].inlay_hints_restored then
+        vim.lsp.inlay_hint.enable(true, { bufnr = args.buf })
+        vim.b[args.buf].inlay_hints_restored = false
+      end
+    end,
+  })
+end
+
+-- Plugin Specification
 return {
   {
     "neovim/nvim-lspconfig",
@@ -10,12 +87,16 @@ return {
       "hrsh7th/cmp-nvim-lsp",
     },
     config = function()
+      patch_inlay_hints_api()
+      setup_diagnostics()
+      
+      -- THIS is the corrected function call
+      setup_inlay_hints()
+
       vim.env.PATH = vim.fn.expand("~/.local/share/nvim/mason/bin:") .. vim.env.PATH
 
       local lspconfig = require("lspconfig")
       local capabilities = require("cmp_nvim_lsp").default_capabilities()
-      
-      -- Native 0.12 fix for Fedora/clangd encoding
       capabilities.offsetEncoding = { "utf-16" }
 
       require("mason").setup({ ui = { border = "rounded" } })
@@ -24,7 +105,6 @@ return {
       })
 
       local servers = { "lua_ls", "clangd", "vtsls", "gopls", "basedpyright", "ruff" }
-
       for _, server in ipairs(servers) do
         local server_opts = {
           capabilities = capabilities,
@@ -35,7 +115,6 @@ return {
           end,
         }
 
-        -- Server-specific configuration overrides
         if server == "basedpyright" then
           server_opts.settings = {
             basedpyright = {
@@ -63,9 +142,7 @@ return {
               autoUseWorkspaceTsdk = true,
               experimental = {
                 maxInlayHintLength = 30,
-                completionConfig = {
-                  enableServerSideFuzzyMatch = true,
-                },
+                completionConfig = { enableServerSideFuzzyMatch = true },
               },
             },
           }
@@ -73,75 +150,6 @@ return {
 
         lspconfig[server].setup(server_opts)
       end
-
-      vim.diagnostic.config({
-        virtual_text = { spacing = 4, prefix = "●" },
-        signs = true,
-        underline = true,
-        update_in_insert = false,
-        severity_sort = true,
-        float = {
-          border = "rounded",
-          source = "always",
-          header = "",
-          prefix = "",
-        },
-      })
-
-      vim.api.nvim_create_autocmd("CursorHold", {
-        callback = function()
-          vim.diagnostic.open_float(nil, {
-            focusable = false,
-            close_events = { "BufLeave", "CursorMoved", "InsertEnter", "FocusLost" },
-            border = "rounded",
-            source = "always",
-            prefix = " ",
-            scope = "cursor",
-          })
-        end,
-      })
-
-      -- Buffer-local keymaps
-      vim.api.nvim_create_autocmd("LspAttach", {
-        callback = function(ev)
-          local opts = { buffer = ev.buf, silent = true }
-          
-          vim.keymap.set("n", "gd", function()
-            vim.lsp.buf.definition({
-              on_list = function(options)
-                if not options.items or #options.items == 0 then
-                  vim.notify("No definition found", vim.log.levels.WARN)
-                  return
-                end
-                local first_def = options.items[1]
-                vim.cmd("edit " .. vim.fn.fnameescape(first_def.filename))
-                vim.api.nvim_win_set_cursor(0, { first_def.lnum, first_def.col - 1 })
-                vim.cmd("normal! zz") 
-              end
-            })
-          end, vim.tbl_extend("force", opts, { desc = "Go to Definition (Bypass QF)" }))
-          
-          vim.keymap.set("n", "K", vim.lsp.buf.hover, opts)
-          vim.keymap.set("n", "<leader>rn", vim.lsp.buf.rename, opts)
-          vim.keymap.set("n", "<leader>f", function() vim.lsp.buf.format({ async = true }) end, opts)
-          vim.keymap.set("n", "gl", vim.diagnostic.open_float, opts)
-
-          vim.keymap.set("n", "<leader>ce", function()
-            local line = vim.api.nvim_win_get_cursor(0)[1] - 1
-            local diags = vim.diagnostic.get(0, { lnum = line })
-            
-            if #diags == 0 then
-              vim.notify("No diagnostic found on this line", vim.log.levels.WARN)
-              return
-            end
-            
-            local msg = diags[1].message
-            vim.fn.setreg("+", msg)
-            vim.fn.setreg('"', msg)
-            vim.notify("Copied: " .. msg, vim.log.levels.INFO)
-          end, vim.tbl_extend("force", opts, { desc = "Copy Error to Clipboard" }))
-        end,
-      })
     end,
   }
 }
