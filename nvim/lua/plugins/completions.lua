@@ -17,7 +17,7 @@ return {
       local lspkind = require("lspkind")
       local types = require("cmp.types")
 
-local kind_priority = {
+      local kind_priority = {
         [types.lsp.CompletionItemKind.Variable]   = 1,
         [types.lsp.CompletionItemKind.Constant]   = 1,
         [types.lsp.CompletionItemKind.EnumMember] = 1,
@@ -37,8 +37,8 @@ local kind_priority = {
           fetching_timeout = 200,
         },
 
-        -- 3. Custom Sorting Engine
-      sorting = {
+        -- Custom Sorting Engine
+        sorting = {
           priority_weight = 2,
           comparators = {
             cmp.config.compare.exact,
@@ -50,7 +50,7 @@ local kind_priority = {
               if src2 == "nvim_lsp" and src1 ~= "nvim_lsp" then return false end
               return nil
             end,
-
+            -- 2. Strict semantic hierarchy
             function(entry1, entry2)
               local kind1 = entry1:get_kind()
               local kind2 = entry2:get_kind()
@@ -61,7 +61,6 @@ local kind_priority = {
               end
               return nil
             end,
-
             cmp.config.compare.locality,
             cmp.config.compare.recently_used,
             cmp.config.compare.score,
@@ -70,7 +69,6 @@ local kind_priority = {
           },
         },
 
-        -- Removed snippet jump logic from <Tab>
         mapping = cmp.mapping.preset.insert({
           ["<C-Space>"] = cmp.mapping.complete(),
           ["<CR>"] = cmp.mapping.confirm({ select = true }),
@@ -100,7 +98,13 @@ local kind_priority = {
           format = lspkind.cmp_format({
             mode = "symbol_text",
             maxwidth = 50,
+            menu = {
+              nvim_lsp = "[LSP]",
+              buffer   = "[Buf]",
+              path     = "[Path]",
+            },
             before = function(entry, vim_item)
+              vim_item.dup = 0 -- Safety net deduplication
               return require("tailwind-tools.cmp").lspkind_format(entry, vim_item)
             end,
           }),

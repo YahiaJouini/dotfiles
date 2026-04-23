@@ -20,24 +20,24 @@ return {
 
       require("mason").setup({ ui = { border = "rounded" } })
       require("mason-lspconfig").setup({
-        -- ts_ls is back in the automated pipeline
-        ensure_installed = { "lua_ls", "clangd", "ts_ls", "gopls", "basedpyright", "ruff" }
+        ensure_installed = { "lua_ls", "clangd", "vtsls", "gopls", "basedpyright", "ruff" }
       })
 
-      local servers = { "lua_ls", "clangd", "ts_ls", "gopls", "basedpyright", "ruff" }
+      local servers = { "lua_ls", "clangd", "vtsls", "gopls", "basedpyright", "ruff" }
 
       for _, server in ipairs(servers) do
-        lspconfig[server].setup({
+        local server_opts = {
           capabilities = capabilities,
-          -- Standard root detection
           root_dir = function(fname)
             local util = require("lspconfig.util")
             return util.root_pattern(".git", "pyproject.toml", "package.json", "go.mod")(fname)
               or vim.fn.getcwd()
           end,
-          
-          -- Silence Pyright's linter so Ruff can do its job without duplicating errors
-          settings = (server == "basedpyright") and {
+        }
+
+        -- Server-specific configuration overrides
+        if server == "basedpyright" then
+          server_opts.settings = {
             basedpyright = {
               analysis = {
                 typeCheckingMode = "strict",
@@ -47,11 +47,33 @@ return {
                 },
               }
             }
-          } or nil
-        })
+          }
+        elseif server == "vtsls" then
+          server_opts.settings = {
+            typescript = {
+              updateImportsOnFileMove = { enabled = "always" },
+              preferences = { importModuleSpecifierPreference = "non-relative" },
+              inlayHints = {
+                parameterNames = { enabled = "literals" },
+                variableTypes = { enabled = true },
+              },
+            },
+            vtsls = {
+              enableMoveToFileCodeAction = true,
+              autoUseWorkspaceTsdk = true,
+              experimental = {
+                maxInlayHintLength = 30,
+                completionConfig = {
+                  enableServerSideFuzzyMatch = true,
+                },
+              },
+            },
+          }
+        end
+
+        lspconfig[server].setup(server_opts)
       end
 
-      -- Modern 0.12 Diagnostic UI
       vim.diagnostic.config({
         virtual_text = { spacing = 4, prefix = "●" },
         signs = true,
@@ -66,7 +88,6 @@ return {
         },
       })
 
-      -- Hover Popup on CursorHold
       vim.api.nvim_create_autocmd("CursorHold", {
         callback = function()
           vim.diagnostic.open_float(nil, {
@@ -92,21 +113,19 @@ return {
                   vim.notify("No definition found", vim.log.levels.WARN)
                   return
                 end
-                -- Completely bypasses the persistent Quickfix list.
                 local first_def = options.items[1]
                 vim.cmd("edit " .. vim.fn.fnameescape(first_def.filename))
                 vim.api.nvim_win_set_cursor(0, { first_def.lnum, first_def.col - 1 })
-                -- Center the screen after jumping
                 vim.cmd("normal! zz") 
               end
             })
           end, vim.tbl_extend("force", opts, { desc = "Go to Definition (Bypass QF)" }))
+          
           vim.keymap.set("n", "K", vim.lsp.buf.hover, opts)
           vim.keymap.set("n", "<leader>rn", vim.lsp.buf.rename, opts)
           vim.keymap.set("n", "<leader>f", function() vim.lsp.buf.format({ async = true }) end, opts)
           vim.keymap.set("n", "gl", vim.diagnostic.open_float, opts)
 
-          -- Wayland/Kitty clipboard logic for diagnostics
           vim.keymap.set("n", "<leader>ce", function()
             local line = vim.api.nvim_win_get_cursor(0)[1] - 1
             local diags = vim.diagnostic.get(0, { lnum = line })
