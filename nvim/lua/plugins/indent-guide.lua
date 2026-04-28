@@ -1,8 +1,10 @@
-return {
-  "lukas-reineke/indent-blankline.nvim",
-  main = "ibl",
-  event = "BufReadPost",
-  config = function()
+vim.pack.add({
+  'https://github.com/lukas-reineke/indent-blankline.nvim',
+})
+
+vim.api.nvim_create_autocmd({ "BufReadPost", "BufNewFile" }, {
+  once = true,
+  callback = function()
     require("ibl").setup({
       indent = {
         char = "│",
@@ -13,5 +15,5 @@ return {
 
       whitespace = { remove_blankline_trail = true },
     })
-  end,
-}
+  end
+})

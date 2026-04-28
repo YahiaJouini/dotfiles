@@ -1,8 +1,10 @@
-return {
-  "RRethy/vim-illuminate",
-  -- Load only when holding the cursor, not immediately on startup
-  event = { "CursorHold", "CursorHoldI" },
-  config = function()
+vim.pack.add({
+  'https://github.com/RRethy/vim-illuminate',
+})
+
+vim.api.nvim_create_autocmd({ "CursorHold", "CursorHoldI" }, {
+  once = true,
+  callback = function()
     require("illuminate").configure({
       delay = 250, -- Throttled
       providers = {
@@ -21,8 +23,7 @@ return {
         "TelescopePrompt",
         "checkhealth",
         "help",
-        "lazy",
       },
     })
-  end,
-}
+  end
+})

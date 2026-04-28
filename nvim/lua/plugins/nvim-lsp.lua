@@ -1,4 +1,9 @@
--- this file only works for nvim 0.12+, check git history for older versions of nvim
+vim.pack.add({
+  'https://github.com/williamboman/mason.nvim',
+  'https://github.com/williamboman/mason-lspconfig.nvim',
+  'https://github.com/hrsh7th/cmp-nvim-lsp',
+  'https://github.com/neovim/nvim-lspconfig',
+})
 
 local function patch_inlay_hints_api()
   local orig_set_extmark = vim.api.nvim_buf_set_extmark
@@ -13,7 +18,6 @@ local function patch_inlay_hints_api()
   end
 end
 
--- Diagnostic UI Setup
 local function setup_diagnostics()
   vim.diagnostic.config({
     virtual_text = { spacing = 4, prefix = "●" },
@@ -39,7 +43,6 @@ local function setup_diagnostics()
   })
 end
 
--- Inlay Hint State Management
 local function setup_inlay_hints()
   local lsp_group = vim.api.nvim_create_augroup("UserLspConfig", { clear = true })
   local inlay_hint_grp = vim.api.nvim_create_augroup("LspInlayHints", { clear = true })
@@ -75,87 +78,75 @@ local function setup_inlay_hints()
   })
 end
 
--- Plugin Specification
-return {
-  {
-    "neovim/nvim-lspconfig",
-    event = { "BufReadPre", "BufNewFile" },
-    cmd = { "LspInfo", "Mason", "MasonInstall" },
-    dependencies = {
-      "williamboman/mason.nvim",
-      "williamboman/mason-lspconfig.nvim",
-      "hrsh7th/cmp-nvim-lsp",
-    },
-    config = function()
-      patch_inlay_hints_api()
-      setup_diagnostics()
+patch_inlay_hints_api()
+setup_diagnostics()
+setup_inlay_hints()
 
-      -- THIS is the corrected function call
-      setup_inlay_hints()
+-- Inject Mason binaries into the Neovim instance path natively
+vim.env.PATH = vim.fn.expand("~/.local/share/nvim/mason/bin:") .. vim.env.PATH
 
-      vim.env.PATH = vim.fn.expand("~/.local/share/nvim/mason/bin:") .. vim.env.PATH
+-- Nvim-Cmp Capability bridging
+local capabilities = require("cmp_nvim_lsp").default_capabilities()
+capabilities.offsetEncoding = { "utf-16" }
 
-      local lspconfig = require("lspconfig")
-      local capabilities = require("cmp_nvim_lsp").default_capabilities()
-      capabilities.offsetEncoding = { "utf-16" }
+-- Initialize Mason
+require("mason").setup({ ui = { border = "rounded" } })
+require("mason-lspconfig").setup({
+  ensure_installed = { "lua_ls", "clangd", "vtsls", "gopls", "basedpyright", "ruff" }
+})
 
-      require("mason").setup({ ui = { border = "rounded" } })
-      require("mason-lspconfig").setup({
-        ensure_installed = { "lua_ls", "clangd", "vtsls", "gopls", "basedpyright", "ruff" }
-      })
+-- Initialize Servers
+local lspconfig = require("lspconfig")
+local servers = { "lua_ls", "clangd", "vtsls", "gopls", "basedpyright", "ruff" }
 
-      local servers = { "lua_ls", "clangd", "vtsls", "gopls", "basedpyright", "ruff" }
-      for _, server in ipairs(servers) do
-        local server_opts = {
-          capabilities = capabilities,
-          root_dir = function(fname)
-            local util = require("lspconfig.util")
-            return util.root_pattern(".git", "pyproject.toml", "package.json", "go.mod")(fname)
-                or vim.fn.getcwd()
-          end,
-        }
-
-        if server == "basedpyright" then
-          server_opts.root_dir = function(fname)
-            local util = require("lspconfig.util")
-            return util.root_pattern("pyrightconfig.json")(fname)
-                or util.root_pattern("pyproject.toml", ".git")(fname)
-                or vim.fn.getcwd()
-          end
-          server_opts.settings = {
-            basedpyright = {
-              analysis = {
-                typeCheckingMode = "strict",
-                diagnosticSeverityOverrides = {
-                  reportUnusedImport = "none",
-                  reportUnusedVariable = "none",
-                },
-              }
-            }
-          }
-        elseif server == "vtsls" then
-          server_opts.settings = {
-            typescript = {
-              updateImportsOnFileMove = { enabled = "always" },
-              preferences = { importModuleSpecifierPreference = "non-relative" },
-              inlayHints = {
-                parameterNames = { enabled = "literals" },
-                variableTypes = { enabled = true },
-              },
-            },
-            vtsls = {
-              enableMoveToFileCodeAction = true,
-              autoUseWorkspaceTsdk = true,
-              experimental = {
-                maxInlayHintLength = 30,
-                completionConfig = { enableServerSideFuzzyMatch = true },
-              },
-            },
-          }
-        end
-
-        lspconfig[server].setup(server_opts)
-      end
+for _, server in ipairs(servers) do
+  local server_opts = {
+    capabilities = capabilities,
+    root_dir = function(fname)
+      local util = require("lspconfig.util")
+      return util.root_pattern(".git", "pyproject.toml", "package.json", "go.mod")(fname)
+          or vim.fn.getcwd()
     end,
   }
-}
+
+  if server == "basedpyright" then
+    server_opts.root_dir = function(fname)
+      local util = require("lspconfig.util")
+      return util.root_pattern("pyrightconfig.json")(fname)
+          or util.root_pattern("pyproject.toml", ".git")(fname)
+          or vim.fn.getcwd()
+    end
+    server_opts.settings = {
+      basedpyright = {
+        analysis = {
+          typeCheckingMode = "strict",
+          diagnosticSeverityOverrides = {
+            reportUnusedImport = "none",
+            reportUnusedVariable = "none",
+          },
+        }
+      }
+    }
+  elseif server == "vtsls" then
+    server_opts.settings = {
+      typescript = {
+        updateImportsOnFileMove = { enabled = "always" },
+        preferences = { importModuleSpecifierPreference = "non-relative" },
+        inlayHints = {
+          parameterNames = { enabled = "literals" },
+          variableTypes = { enabled = true },
+        },
+      },
+      vtsls = {
+        enableMoveToFileCodeAction = true,
+        autoUseWorkspaceTsdk = true,
+        experimental = {
+          maxInlayHintLength = 30,
+          completionConfig = { enableServerSideFuzzyMatch = true },
+        },
+      },
+    }
+  end
+
+  lspconfig[server].setup(server_opts)
+end
