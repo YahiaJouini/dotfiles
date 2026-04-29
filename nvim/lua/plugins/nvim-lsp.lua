@@ -92,12 +92,12 @@ capabilities.offsetEncoding = { "utf-16" }
 -- Initialize Mason
 require("mason").setup({ ui = { border = "rounded" } })
 require("mason-lspconfig").setup({
-  ensure_installed = { "lua_ls", "clangd", "vtsls", "gopls", "basedpyright", "ruff" }
+  ensure_installed = { "lua_ls", "clangd", "vtsls", "gopls", "basedpyright", "ruff", "tailwindcss" }
 })
 
 -- Initialize Servers
 local lspconfig = require("lspconfig")
-local servers = { "lua_ls", "clangd", "vtsls", "gopls", "basedpyright", "ruff" }
+local servers = { "lua_ls", "clangd", "vtsls", "gopls", "basedpyright", "ruff", "tailwindcss" }
 
 for _, server in ipairs(servers) do
   local server_opts = {
