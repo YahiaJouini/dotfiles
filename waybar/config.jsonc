@@ -1,13 +1,20 @@
 {
-  "modules-left": ["custom/power", "hyprland/workspaces", "wlr/taskbar"],
-  "modules-right": ["group/tray-expander", "network", "pulseaudio"],
+  "layer": "top",
+  "position": "top",
+  "height": 38,
+  "spacing": 4,
+
+  "modules-left": ["custom/power", "sway/workspaces", "wlr/taskbar"],
   "modules-center": ["clock"],
+  "modules-right": ["group/tray-expander", "network", "pulseaudio"],
+
   "custom/power": {
-    "format": "⭘ ",
+    "format": "⭘",
     "tooltip": false,
-    "on-click": "wlogout -b 5",
+    "on-click": "echo -e 'Logout\nReboot\nShutdown' | rofi -dmenu -p 'System' | xargs -I{} bash -c 'case {} in Logout) swaymsg exit ;; Reboot) reboot ;; Shutdown) poweroff ;; esac'"
   },
-  "hyprland/workspaces": {
+
+  "sway/workspaces": {
     "disable-scroll": true,
     "warp-on-scroll": false,
     "format": "{icon}",
@@ -79,6 +86,14 @@
     },
     "on-click": "pavucontrol",
   },
+"network": {
+    "family": "ipv4",
+    "format-ethernet": "󰈀  {ipaddr}",
+    "format-wifi": "  {ipaddr}",
+    "format-disconnected": "󰲜 Disconnected",
+    "tooltip-format": "{ifname} via {gwaddr}",
+    "on-click": "nm-connection-editor"
+},
   "clock": {
     "format": "{:%a %d/%m/%Y ~ %H:%M}",
     "tooltip-format": "<span size='15000'><tt>{calendar}</tt></span>",

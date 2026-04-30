@@ -2,192 +2,94 @@
 @import "colors.rasi"
 
 configuration {
-	modi: "window,run,drun";
-	display-drun: "Applications";
-	display-window: "Windows";
-	display-run: "Run";
-	drun-display-format: "{name}";
-	font: "JetBrainsMono Nerd Font 12";
-	show-icons: true;
-	icon-theme: "Colloid";
+    modi:                        "drun,run";
+    show-icons:                  true;
+    display-drun:                "";
+    drun-display-format:         "{name}";
+    font:                        "JetBrainsMono Nerd Font 12";
 }
 
 window {
-    /* properties for window widget */
-    transparency:                "real";
-    location:                    center;
-    anchor:                      center;
-    fullscreen:                  false;
-    width:                       420px;
-    x-offset:                    0px;
-    y-offset:                    0px;
-
-    /* properties for all widgets */
+    width:                       500px; 
     enabled:                     true;
-    border:			 1px solid;
-    border-color:		 @secondary-container;
-    border-radius:               8px;
-    cursor:                      "default";
-    background-color:            @on-primary-fixed;
+    border:                      2px solid;
+    border-color:                @accent;
+    background-color:            @bg;
 }
 
 mainbox {
-    enabled:                     true;
     spacing:                     0px;
     background-color:            transparent;
-    orientation:                 vertical;
-    children:                    [ "inputbar", "listview", "mode-switcher" ];
-    padding:                     10px;
+    children:                    [ "inputbar", "listview" ];
+    padding:                     15px;
 }
 
 inputbar {
-    enabled:                     true;
-    spacing:                     8px;
-    padding:                     10px;
-    border-radius:               6px;
-    background-color:		 @on-primary;
-    text-color:			 @on-surface;
-    children:                    [ "textbox-prompt-colon", "entry" ];
+    spacing:                     10px;
     margin:                      0px 0px 10px 0px;
+    padding:                     10px 15px;
+    background-color:            @bg-alt;
+    text-color:                  @fg;
+    border-radius:               2px;
+    children:                    [ "prompt", "entry" ];
 }
 
-textbox-prompt-colon {
-    enabled:                     true;
-    expand:                      false;
-    str:                         "  ";
-    background-color:            inherit;
-    text-color:                  inherit;
+prompt {
+    background-color:            transparent;
+    text-color:                  @accent;
 }
 
 entry {
-    enabled:                     true;
-    background-color:            inherit;
-    text-color:                  inherit;
-    cursor:                      text;
-    placeholder:                 "Search";
-    placeholder-color:           inherit;
-}
-
-mode-switcher{
-    enabled:                     true;
-    spacing:                     10px;
     background-color:            transparent;
-    text-color:                  @primary-fixed;
-    margin:                      10px 0px 0px 0px;
-}
-
-button {
-    padding:                     8px;
-    border-radius:               6px;
-    background-color:            @on-primary;
     text-color:                  inherit;
-    cursor:                      pointer;
-}
-
-button selected {
-    background-color:            @primary;
-    text-color:                  @on-secondary;
+    placeholder:                 "Search...";
+    placeholder-color:           @active;
 }
 
 listview {
-    enabled:                     true;
     columns:                     1;
     lines:                       6;
-    cycle:                       true;
-    dynamic:                     true;
-    scrollbar:                   true;
-    layout:                      vertical;
-    reverse:                     false;
     fixed-height:                true;
-    fixed-columns:               true;
-    
-    spacing:                     5px;
+    spacing:                     4px;
     background-color:            transparent;
-    text-color:                  @on-surface;
-    cursor:                      "default";
+    text-color:                  @fg;
+    scrollbar:                   true;
 }
 
 scrollbar {
     width:                       4px;
     border:                      0;
-    handle-width:                4px;
-    handle-color:                @primary;
-    background-color:            @on-primary;
-    border-radius:               4px;
-    margin:                      0px 0px 0px 5px;
+    handle-width:                8px;
+    handle-color:                @accent;
+    background-color:            @bg-alt;
+    margin:                      0px 0px 0px 10px;
 }
 
 element {
-    enabled:                     true;
-    spacing:                     10px;
-    padding:                     6px 8px;
-    border-radius:               6px;
+    spacing:                     12px;
+    padding:                     8px;
+    border-radius:               2px;
     background-color:            transparent;
-    text-color:                  @on-surface;
-    cursor:                      pointer;
+    text-color:                  @fg;
 }
 
 element normal.normal {
-    background-color:            inherit;
-    text-color:                  inherit;
-}
-
-element normal.urgent {
-    background-color:            @error;
-    text-color:                  @on-surface;
-}
-
-element normal.active {
-    background-color:            @primary;
-    text-color:                  @on-surface;
+    background-color:            transparent;
+    text-color:                  @fg;
 }
 
 element selected.normal {
-    background-color:            @primary;
-    text-color:                  @on-secondary;
-}
-
-element selected.urgent {
-    background-color:            @error;
-    text-color:                  @on-secondary;
-}
-
-element selected.active {
-    background-color:            @error;
-    text-color:                  @on-secondary;
+    background-color:            @accent;
+    text-color:                  @bg;
 }
 
 element-icon {
+    size:                        24px;
     background-color:            transparent;
-    text-color:                  inherit;
-    size:                        28px;
-    cursor:                      inherit;
 }
 
 element-text {
     background-color:            transparent;
     text-color:                  inherit;
-    cursor:                      inherit;
     vertical-align:              0.5;
-    horizontal-align:            0.0;
-}
-
-message {
-    background-color:            transparent;
-}
-
-textbox {
-    padding:                     10px;
-    border-radius:               6px;
-    background-color:            @on-primary;
-    text-color:                  @on-surface;
-    vertical-align:              0.5;
-    horizontal-align:            0.0;
-}
-
-error-message {
-    padding:                     10px;
-    border-radius:               8px;
-    background-color:            @on-primary;
-    text-color:                  @on-surface;
 }

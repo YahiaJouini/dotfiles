@@ -1,71 +1,72 @@
-/* Base font and element defaults */
-/* Base font and element defaults */
+@import "colors.css";
+
 * {
-  font-family: "JetBrains Mono Nerd Font", monospace;
-  font-size: 16px;
-  font-weight: bold;
-  background-color: transparent;
-  border-radius: 5px;
-  min-height: 0;
+    font-family: "JetBrains Mono Nerd Font", monospace;
+    font-size: 16px;
+    font-weight: bold;
+    background-color: transparent;
+    border-radius: 5px;
+    padding: 0;
+    margin: 0;
 }
 
 /* Window and tooltip backgrounds */
 window,
 tooltip {
-  background-color: #1e1e2e;
+    background-color: @bg;
 }
 
 /* Waybar main bar */
 #waybar {
-  background-color: rgba(30, 30, 46, 0.7);
-  border-radius: 0;
+    background-color: alpha(@bg, 0.7);
+    border-radius: 0;
 }
 
 /* --- WORKSPACES --- */
 #workspaces {
-  margin: 1px 0;
+    margin: 1px 0;
 }
 
 #workspaces button {
-  color: #cdd6f4;
-  border: 2px solid transparent;
-  padding: 0 8px;
-  margin: 0 2px;
+    color: @fg;
+    border: 2px solid transparent;
+    padding: 0 8px;
+    margin: 0 2px;
 }
 
 #workspaces button:hover {
-  color: #cba6f7;
-  border: 2px solid rgba(203, 166, 247, 0.4);
-  background-color: rgba(88, 91, 112, 0.6);
+    color: @lavender;
+    border: 2px solid alpha(@lavender, 0.4);
+    background-color: alpha(@surface, 0.6);
 }
 
 #workspaces button.active,
 #workspaces button.focused {
-  color: #cba6f7;
-  border: 2px solid #cba6f7; /* Lavender box for workspaces */
+    color: @lavender;
+    border: 2px solid @lavender;
 }
 
 #workspaces button.urgent {
-  background-color: #f38ba8;
+    background-color: @red;
 }
 
 /* --- TASKBAR --- */
 #taskbar button {
-  color: #cdd6f4;
-  padding: 0 8px;
-  margin: 0 4px;
-  border-bottom: 3px solid transparent;
-  border-radius: 0;
+    color: @fg;
+    padding: 0 8px;
+    margin: 0 4px;
+    border-bottom: 3px solid transparent;
+    border-radius: 0;
 }
 
 #taskbar button:hover {
-  background-color: rgba(88, 91, 112, 0.6);
+    background-color: alpha(@surface, 0.6);
 }
 
 #taskbar button.active {
-  color: #cba6f7;
-  border-bottom: 3px solid #cba6f7; /* Bottom underline only for tasks */
-  background-color: rgba(203, 166, 247, 0.1);
+    color: @lavender;
+    border-bottom: 3px solid @lavender;
+    background-color: alpha(@lavender, 0.1);
 }
 
 /* --- OTHER MODULES --- */
@@ -74,39 +75,39 @@ tooltip {
 #network,
 #pulseaudio,
 #clock {
-  color: #cdd6f4;
-  margin: 1px 0;
-  padding: 0px 10px;
-  border-radius: 3px;
-  transition: background-color 0.2s ease;
+    color: @fg;
+    margin: 1px 0;
+    padding: 0px 10px;
+    border-radius: 3px;
+    transition: background-color 0.2s ease;
 }
 
 #custom-power:hover,
 #network:hover,
 #pulseaudio:hover,
 #clock:hover {
-  background-color: rgba(88, 91, 112, 0.6);
+    background-color: alpha(@surface, 0.6);
 }
 
 #network {
-  color: white;
+    color: white;
 }
 
 #pulseaudio {
-  color: #cba6f7;
-  padding-right: 20px;
+    color: @lavender;
+    padding-right: 20px;
 }
 
 #clock {
-  color: #89b4fa;
-  margin-right: 10px;
+    color: @blue;
+    margin-right: 10px;
 }
 
 #custom-power {
-  margin-left: 10px;
-  padding-left: 15px;
+    margin-left: 10px;
+    padding-left: 15px;
 }
 
 #custom-expand-icon {
-  margin-right: 10px;
+    margin-right: 10px;
 }
