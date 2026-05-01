@@ -105,9 +105,9 @@ tooltip {
 
 #custom-power {
     margin-left: 10px;
-    padding-left: 15px;
 }
 
 #custom-expand-icon {
     margin-right: 10px;
+    color:@fg;
 }

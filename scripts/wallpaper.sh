@@ -1,4 +1,4 @@
-#!/bin/bash
+!/bin/bash
 WALLPAPER_DIR="/home/yahia/Pictures/wallpapers"
 LAST_WALLPAPER_FILE="/tmp/last_wallpaper"
 

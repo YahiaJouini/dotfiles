@@ -1,0 +1,8 @@
+[general]
+fullscreen = false
+early-exit = true
+initial-tool = "arrow"
+copy-command = "wl-copy"
+
+[font]
+family = "JetBrainsMono Nerd Font"
