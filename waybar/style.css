@@ -1,113 +1,99 @@
 @import "colors.css";
 
+/* Global Resets */
 * {
-    font-family: "JetBrains Mono Nerd Font", monospace;
-    font-size: 16px;
-    font-weight: bold;
-    background-color: transparent;
-    border-radius: 5px;
-    padding: 0;
-    margin: 0;
-}
-
-/* Window and tooltip backgrounds */
-window,
-tooltip {
-    background-color: @bg;
-}
-
-/* Waybar main bar */
-#waybar {
-    background-color: alpha(@bg, 0.7);
+    font-family: "JetBrainsMono Nerd Font", monospace;
+    font-size: 15px;
+    font-weight: 700;
+    border: none;
     border-radius: 0;
 }
 
-/* --- WORKSPACES --- */
+window#waybar {
+    background-color: alpha(@bg, 0.85);
+    color: @fg;
+}
+
+/* Common Module Base */
+#custom-power,
+#taskbar,
+#window,
+#workspaces,
+#mpris,
+#tray-expander,
+#network,
+#pulseaudio,
+#clock {
+    background-color: transparent;
+    margin: 4px 5px;
+    padding: 0 4px;
+    border-radius: 2px;
+    transition: background-color 0.1s ease;
+}
+
+/* Left Modules */
+#custom-power {
+    color: @red;
+}
+
+#taskbar button {
+    padding: 0 8px;
+    margin: 0 6px;
+    border-radius: 2px;
+}
+
+#taskbar button.active {
+    background-color: alpha(@fg, 0.2);
+}
+
+#window {
+    font-weight: 500;
+}
+
+/* Center Modules */
 #workspaces {
-    margin: 1px 0;
+    background-color: rgba(88, 91, 112, 0.1);
 }
 
 #workspaces button {
     color: @fg;
-    border: 2px solid transparent;
     padding: 0 8px;
-    margin: 0 2px;
-}
-
-#workspaces button:hover {
-    color: @lavender;
-    border: 2px solid alpha(@lavender, 0.4);
-    background-color: alpha(@surface, 0.6);
+    margin: 3px 2px;
+    border-radius: 2px;
+    transition: all 0.2s ease;
 }
 
 #workspaces button.active,
 #workspaces button.focused {
-    color: @lavender;
-    border: 2px solid @lavender;
+    color: @bg;
+    background-color: @lavender;
 }
 
 #workspaces button.urgent {
+    color: @bg;
     background-color: @red;
 }
 
-/* --- TASKBAR --- */
-#taskbar button {
-    color: @fg;
-    padding: 0 8px;
-    margin: 0 4px;
-    border-bottom: 3px solid transparent;
-    border-radius: 0;
-}
-
-#taskbar button:hover {
-    background-color: alpha(@surface, 0.6);
-}
-
-#taskbar button.active {
+/* Right Modules */
+#mpris, 
+#pulseaudio, 
+#custom-expand-icon {
     color: @lavender;
-    border-bottom: 3px solid @lavender;
-    background-color: alpha(@lavender, 0.1);
 }
 
-/* --- OTHER MODULES --- */
-#custom-power,
-#tray,
-#network,
-#pulseaudio,
+#network, 
 #clock {
     color: @fg;
-    margin: 1px 0;
-    padding: 0px 10px;
-    border-radius: 3px;
-    transition: background-color 0.2s ease;
 }
 
-#custom-power:hover,
+/* Hovers */
+#taskbar button:hover,
 #network:hover,
 #pulseaudio:hover,
 #clock:hover {
-    background-color: alpha(@surface, 0.6);
-}
-
-#network {
-    color: white;
-}
-
-#pulseaudio {
-    color: @lavender;
-    padding-right: 20px;
-}
-
-#clock {
-    color: @blue;
-    margin-right: 10px;
-}
-
-#custom-power {
-    margin-left: 10px;
+    background-color: alpha(@surface, 0.5);
 }
 
 #custom-expand-icon {
-    margin-right: 10px;
-    color:@fg;
+    margin-right: 5px;
 }
