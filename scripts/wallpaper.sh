@@ -23,7 +23,11 @@ LAST_WALLPAPER=$(cat "$LAST_WALLPAPER_FILE" 2>/dev/null)
 if [[ ${#WALLPAPERS[@]} -eq 1 ]]; then
     SELECTED="${WALLPAPERS[0]}"
 else
-    SELECTED=$(printf "%s\n" "${WALLPAPERS[@]}" | grep -vF "$LAST_WALLPAPER" | shuf -n 1)
+    if [[ -z "$LAST_WALLPAPER" ]]; then
+        SELECTED=$(printf "%s\n" "${WALLPAPERS[@]}" | shuf -n 1)
+    else
+        SELECTED=$(printf "%s\n" "${WALLPAPERS[@]}" | grep -vxF "$LAST_WALLPAPER" | shuf -n 1)
+    fi
 fi
 
 # 5. Apply and Save
