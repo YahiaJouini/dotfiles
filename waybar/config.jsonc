@@ -18,7 +18,7 @@
         "group/tray-expander",
         "network",
         "pulseaudio",
-        "clock"
+        "clock",
     ],
 
     "hyprland/window": {
@@ -35,7 +35,7 @@
     },
 
     "hyprland/workspaces": {
-        "disable-scroll": true,
+        "disable-scroll": false,
         "all-outputs": true,
         "format": "{name}",
         "on-click": "activate"
@@ -75,21 +75,38 @@
         "tooltip-format": "{essid} {ipaddr}",
         "on-click": "nm-connection-editor"
     },
-
     "pulseaudio": {
         "format": "{icon} {volume}%",
         "format-muted": "󰝟",
-        "format-icons": { "default": ["󰕾"] }
+        "format-icons": {
+            "headphone": "",
+            "default": ["", "", ""]
+        },
+        "on-click": "~/.config/scripts/sys-audio-mixer.sh",
+        "on-click-middle": "~/.config/scripts/sys-audio-switch.sh",
+        "on-click-right": "pavucontrol",
+        "on-scroll-up": "wpctl set-volume @DEFAULT_AUDIO_SINK@ 5%+",
+        "on-scroll-down": "wpctl set-volume @DEFAULT_AUDIO_SINK@ 5%-"
     },
-
     "clock": {
-        "format": "{:%H:%M | %a %d %b }",
-        "tooltip-format": "<tt>{calendar}</tt>"
-    },
-
+            "format": "{:%H:%M | %a %d %b}",
+            "tooltip-format": "<span size='15000'><tt>{calendar}</tt></span>",
+            "on-click": "swaync-client -t -sw",
+            "calendar": {
+                "mode-mon-col"  : 3,
+                "weeks-pos"     : "right",
+                "on-scroll"     : 1,
+            "format": {
+                "months": "<span color='#F5C2E7'><b>{}</b></span>",
+                "weekdays": "<span color='#89B4FA'><b>{}</b></span>",
+                "days": "<span color='#CDD6F4'><b>{}</b></span>",
+                "today": "<span color='#F9E2AF'><b>{}</b></span>",
+              }
+            }
+        },
     "custom/power": {
         "format": "⭘",
-        "tooltip":false,
-        "on-click": "echo -e 'Logout\nReboot\nShutdown' | rofi -dmenu -p 'System' | xargs -I{} bash -c 'case {} in Logout) swaymsg exit ;; Reboot) reboot ;; Shutdown) poweroff ;; esac'"
+        "tooltip": false,
+        "on-click": "~/.config/scripts/sys-power.sh"
     }
 }

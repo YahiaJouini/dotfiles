@@ -1,20 +1,33 @@
 # GRUB boot loader configuration
 
-GRUB_DEFAULT=0
 GRUB_TIMEOUT=15
-GRUB_TIMEOUT_STYLE=menu
 GRUB_DISTRIBUTOR="Arch"
-GRUB_CMDLINE_LINUX_DEFAULT="loglevel=3 quiet nvidia-drm.modeset=1 nvidia_drm.fbdev=1"
+# default to last saved
+GRUB_DEFAULT=saved
+GRUB_SAVEDEFAULT=true
+
+# CONSOLIDATED OPTIMIZED PARAMETERS
+# 1. nvidia-drm.modeset=1: Required for Hyprland.
+# 2. usbcore.autosuspend=-1: Fixes Xbox controller disconnects (Error -71).
+# 3. mitigations=off: Maximum CPU performance (disables security patches for side-channel attacks).
+# 4. preempt=full: Lowest latency for Zen kernel.
+
+GRUB_CMDLINE_LINUX_DEFAULT="quiet loglevel=3 nvidia-drm.modeset=1 nvidia.NVreg_UseKernelSuspendNotifiers=1 usbcore.autosuspend=-1 nowatchdog threadirqs"
+
 GRUB_CMDLINE_LINUX=""
 
-# Graphical Settings
-GRUB_GFXMODE=1920x1080
-GRUB_GFXPAYLOAD_LINUX=keep
-GRUB_THEME="/usr/share/grub/themes/catppuccin-mocha-grub-theme/theme.txt"
-
-# OS Prober for Windows
-GRUB_DISABLE_OS_PROBER=false
-
-# Hardware Support
+# Preload modules for GPT/MSDOS support
 GRUB_PRELOAD_MODULES="part_gpt part_msdos"
+
+# UI Settings
+GRUB_TIMEOUT_STYLE=menu
+GRUB_TERMINAL_INPUT=console
+GRUB_GFXMODE=auto
+GRUB_GFXPAYLOAD_LINUX=keep
+
+# Disable recovery entries for a cleaner menu
 GRUB_DISABLE_RECOVERY=true
+
+
+# detect windows
+GRUB_DISABLE_OS_PROBER=false
