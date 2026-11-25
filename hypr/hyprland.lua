@@ -1,0 +1,16 @@
+require("configs.environment")
+
+require("configs.monitors")
+require("configs.workspaces")
+require("configs.input")
+
+require("configs.looks.misc")
+require("configs.looks.appearance")
+require("configs.looks.animations")
+require("configs.looks.layout")
+
+require("configs.windowrule")
+require("configs.keybinds")
+require("configs.plugins")
+
+require("configs.autostart")

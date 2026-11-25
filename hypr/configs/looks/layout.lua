@@ -1,0 +1,17 @@
+hl.config({
+    master = {
+        new_status = "master",
+    },
+
+    xwayland = {
+        force_zero_scaling = true,
+    },
+
+    ecosystem = {
+        no_update_news = true,
+    },
+
+    dwindle = {
+        preserve_split = true,
+    },
+})

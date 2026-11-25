@@ -1,0 +1,16 @@
+hl.config({
+    cursor = {
+        no_hardware_cursors = 1, -- 0 = off, 1 = on, 2 = auto
+        min_refresh_rate = 144,
+    },
+
+    misc = {
+        force_default_wallpaper = 0,
+        disable_hyprland_logo = true,
+        disable_splash_rendering = true,
+        initial_workspace_tracking = 1,
+        allow_session_lock_restore = true,
+        focus_on_activate = true,
+        mouse_move_enables_dpms = true,
+    },
+})
